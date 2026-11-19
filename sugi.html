@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sugi · Escenas</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#eaf1f0;--card:#fff;--ink:#16302f;--mut:#566f6c;--line:#cfdedc;--acc:#1f7a78;--acc-t:#fff;--soft:#dcecea;--sun:#d99a2b;--hot:#c9692f;--ok:#2f8f5b}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1a1a;--card:#172625;--ink:#e3f0ee;--mut:#9ab5b1;--line:#27403e;--acc:#4fb8b2;--acc-t:#08201f;--soft:#1e3532;--sun:#e8b04a;--hot:#e08a52;--ok:#56c28a}}
+:root[data-theme="dark"]{--bg:#0f1a1a;--card:#172625;--ink:#e3f0ee;--mut:#9ab5b1;--line:#27403e;--acc:#4fb8b2;--acc-t:#08201f;--soft:#1e3532;--sun:#e8b04a;--hot:#e08a52;--ok:#56c28a}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 1rem/1.5 "Nunito Sans",system-ui,sans-serif;min-height:100vh}
+main{max-width:660px;margin:0 auto;padding:18px 14px 36px}
+h1,h2,h3{font-family:"Bricolage Grotesque","Nunito Sans",system-ui,sans-serif;line-height:1.15;margin:0}
+h1{font-size:2.1rem}h2{font-size:1.35rem}p{margin:.5em 0}.mut{color:var(--mut)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin:12px 0}
+button{font:inherit;cursor:pointer;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:11px 14px;text-align:left;width:100%;margin:5px 0;transition:background .15s,border-color .15s}
+button:hover:not(:disabled){border-color:var(--acc);background:var(--soft)}
+button:disabled{opacity:.45;cursor:default}
+button:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+button.pri{background:var(--acc);color:var(--acc-t);border-color:var(--acc);font-weight:700;text-align:center}
+.row{display:flex;gap:8px}.row>button{flex:1;text-align:center}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+#stage{position:relative;height:250px;border-radius:14px;overflow:hidden;margin:10px 0;border:1px solid var(--line)}
+#floor{position:absolute;left:0;right:0;bottom:0;height:46px;background:rgba(0,0,0,.38)}
+#tbl{position:absolute;right:9%;bottom:46px;width:84px;height:54px;background:#6b4a33;border-radius:6px 6px 0 0}
+#obj{position:absolute;left:79%;bottom:98px;font-size:30px;transition:left 1s,opacity 1s,bottom 1s;filter:saturate(.5)}
+.ch{position:absolute;bottom:46px;width:46px;text-align:center}
+.hd{width:44px;height:44px;border-radius:50%;background:#f1c9a5;font-size:26px;line-height:44px;margin:0 auto -4px;position:relative;z-index:1}
+.bd{width:40px;height:64px;border-radius:14px 14px 6px 6px;margin:0 auto}
+#me{left:8%;transition:left .15s linear}#me .bd{background:var(--acc)}
+#fr{left:-18%;transition:left 1.1s ease-out}#fr .bd{background:var(--sun)}
+#th{position:absolute;top:10px;left:10px;right:10px;background:rgba(255,255,255,.93);color:#1c2b2a;border-radius:12px;padding:8px 12px;font-size:.92rem;z-index:2}
+#th.off{display:none}
+.meter{height:12px;border-radius:6px;background:var(--line);overflow:hidden}
+.meter span{display:block;height:100%;width:35%;background:var(--ok);transition:width .2s,background .3s}
+.meter.hot span{background:var(--hot)}
+.who{font-weight:700;color:var(--acc);margin-bottom:2px}
+.say{font-size:1.08rem}
+.tip{border-left:4px solid var(--ok);padding:2px 10px;margin:8px 0;font-size:.94rem}
+.stars{font-size:1.6rem;color:var(--sun)}
+.foot{font-size:.84rem;color:var(--mut);margin-top:22px}
+@media (prefers-reduced-motion:reduce){#fr,#obj,#me{transition:none}}
+</style>
+</head>
+<body>
+<main id="app"></main>
+<script>
+const $=s=>document.querySelector(s);
+const SUBS={alcohol:"Alcohol",nicotina:"Nicotina",psico:"Psicofármacos"};
+const V={alcohol:["tomar","esa copa","🍷"],nicotina:["fumar","ese cigarrillo","🚬"],psico:["tomar de más","esa pastilla extra","💊"]};
+const BG={party:"linear-gradient(#3b2a5c,#1f1633)",home:"linear-gradient(#2a3b57,#16202f)",office:"linear-gradient(#41525c,#242f36)",street:"linear-gradient(#1c2740,#0c1220)"};
+// [escena, fondo, pensamiento, amigo, primera frase, set]
+const SC={
+alcohol:[["Cumpleaños de un amigo","party","Solo una copa. Nadie se va a dar cuenta.","Mara","Oye… te vi yendo hacia la barra. ¿Todo bien?",0],
+["Noche tras un mal día","home","Esta semana fue horrible, me lo merezco.","Luis, tu hermano","Pasé por tu casa y vi tu cara. ¿Qué te pasa?",1],
+["Brindis en el trabajo","office","Todos brindan. Si no lo hago, se va a ver raro.","Diego","Veo que todos están brindando. ¿Cómo vas con eso?",0]],
+nicotina:[["Pausa en la oficina","office","Un cigarrillo y se me pasa el estrés.","Andrea","Vas a salir a fumar, ¿verdad? Recuerdo que querías dejarlo.",0],
+["Después de comer","home","Después de comer siempre fumaba. Solo uno.","Papá","Hijo, parece que ibas a encender uno. ¿Hablamos?",1],
+["Salida nocturna","street","Con el frío y los nervios, uno solo no hace daño.","Valeria","¡Eh! Pensé que ya no fumabas. ¿Necesitas un respiro?",0]],
+psico:[["Noche sin dormir","home","Una pastilla más y por fin descanso.","Sofía, tu hermana","Sé que no puedes dormir. ¿Seguro que esa es la dosis indicada?",1],
+["Día de ansiedad","office","No aguanto. Necesito algo más fuerte.","Karen, compañera","Estás pálida. ¿Quieres hablar antes de tomar algo?",0],
+["Fin de semana aburrido","home","Con una de más me voy a sentir mejor.","Mateo, amigo","Oye, ¿te acompaño un rato? Mañana hablamos con tu médico.",1]]};
+// [texto, cambio de impulso, respuesta del amigo, aprendizaje]
+const SET=[[
+ [["Sí, me están dando ganas de {v}. Qué bueno que me viste.",-30,"Gracias por decírmelo, no es fácil. No estás solo, estoy aquí.","Decir en voz alta lo que sientes le quita fuerza al impulso."],
+  ["Estoy bien, no pasa nada.",-5,"Te creo, pero igual me quedo cerca un momento, ¿vale?","Minimizar lo que sientes puede esconder el riesgo."],
+  ["No te metas, es solo {n}.",25,"No quiero pelear contigo. Solo recuerda por qué empezaste este camino.","Cuando alguien se preocupa, escucharlo ayuda."]],
+ ["¿Y si hacemos algo distinto ahora mismo? Tú decides.",
+  [["Vamos a caminar un rato para despejarme.",-30,"¡Vamos! Mañana vas a estar orgulloso de esta decisión.","Cambiar de lugar corta la ola del antojo, que suele durar pocos minutos."],
+   ["Ok, pero primero me quedo un momento aquí.",5,"Está bien, aquí estaré. Pero no te quedes solo con la idea.","Posponer sin cambiar nada deja el antojo en pie."],
+   ["Ya decidí. Déjame.",25,"No te voy a juzgar. Estaré cerca si me necesitas.","Pedir ayuda antes de decidir cuesta menos que después."]]]],[
+ [["Estoy tenso y siento que lo necesito. ¿Puedes quedarte conmigo?",-30,"Claro que sí. Respiremos juntos un momento.","Pedir compañía es una de las estrategias más efectivas."],
+  ["No te preocupes, ya se me va a pasar.",-5,"Ojalá. Igual me quedo un rato, ¿sí?","Callar lo que sientes no lo hace desaparecer."],
+  ["Déjame en paz.",25,"Está bien, no me voy a ir lejos. Me importas.","Alejar a quien te cuida suele aumentar la soledad."]],
+ ["Dijiste que querías recuperar tu rutina y sentirte mejor. ¿Sigue siendo así?",
+  [["Sí. Eso es lo que quiero. Hoy no voy a {v}.",-30,"Lo sé. Estoy muy orgulloso de ti.","Recordar tus razones te devuelve el control."],
+   ["Sí, pero hoy es diferente.",5,"Siempre parece diferente. Hablemos un minuto más.","“Hoy es diferente” es un pensamiento típico del antojo."],
+   ["Eso ya no importa.",25,"Me importa a mí. Y sé que a ti también.","Decir “ya no importa” suele ser el antojo hablando, no tú."]]]]];
+let G=null,tm=null;
+const fill=t=>t.replace(/\{v\}/g,V[G.sub][0]).replace(/\{n\}/g,V[G.sub][1]);
+const cur=()=>SC[G.sub][G.i];
+function home(){clearInterval(tm);G=null;
+$("#app").innerHTML=`<h1>Sugi · Escenas</h1>
+<p class="mut">Vive tres momentos de riesgo. Tu personaje camina hacia ese momento y el impulso sube. Puedes respirar para frenarlo y, cuando alguien aparezca, tus palabras deciden qué pasa.</p>
+<div class="card"><h2>Elige tu situación</h2>${Object.entries(SUBS).map(([k,v])=>`<button onclick="begin('${k}')"><b>${v}</b></button>`).join("")}</div>
+<p class="foot">Complemento educativo. No sustituye tratamiento profesional. Si estás en crisis, llama a emergencias o a la línea de ayuda de tu país.</p>`}
+function begin(sub){G={sub,i:0,stars:[],slips:0};scene()}
+function scene(){
+ const s=cur();G.imp=35;G.w=0;G.b=0;G.picks=[];G.r=0;
+ $("#app").innerHTML=`<div class="top"><h2>${s[0]}</h2><span class="mut">Escena ${G.i+1} de 3 · ${SUBS[G.sub]}</span></div>
+ <div id="stage" style="background:${BG[s[1]]}"><div id="th">💭 ${s[2]}</div><div id="tbl"></div><div id="floor"></div><div id="obj">${V[G.sub][2]}</div>
+ <div class="ch" id="fr"><div class="hd" id="fh">🙂</div><div class="bd"></div></div>
+ <div class="ch" id="me"><div class="hd" id="mh">😐</div><div class="bd"></div></div></div>
+ <div class="card"><div class="top"><b>Impulso</b><span id="iv" class="mut"></span></div><div class="meter" id="mt"><span id="mb"></span></div></div>
+ <div class="card" id="dlg"></div>
+ <p class="foot">Si estás en crisis, llama a emergencias o a la línea de ayuda de tu país.</p>`;
+ upd();phaseA();
+ clearInterval(tm);tm=setInterval(tick,150)}
+function upd(){const i=Math.max(0,Math.min(100,Math.round(G.imp)));
+ $("#mb").style.width=i+"%";$("#mt").classList.toggle("hot",i>65);$("#iv").textContent=i>65?"Alto":i>40?"Medio":"Bajo";
+ $("#me").style.left=(8+G.w*50)+"%";$("#mh").textContent=i>65?"😣":i>40?"😟":"😐"}
+function phaseA(){
+ $("#dlg").innerHTML=`<p class="say">Caminas hacia ${V[G.sub][1]} y el impulso sube. ¿Qué haces?</p>
+ <div class="row"><button id="bb" onclick="breathe()">🌬️ Respirar hondo</button><button onclick="help()">🤝 Pedir ayuda</button></div><p id="bm" class="mut"></p>`}
+function tick(){
+ G.w=Math.min(1,G.w+1/70);G.imp=Math.min(100,G.imp+.6);upd();
+ if(G.w>=.8)meet()}
+function breathe(){
+ if(G.b>=2){return}
+ G.b++;G.imp-=15;G.w=Math.max(0,G.w-.12);upd();
+ $("#bm").textContent="Inhalas 4 segundos, exhalas 6. Das un paso atrás y el impulso baja."+(G.b>=2?" Ya no puedes respirar más veces en esta escena.":"");
+ if(G.b>=2)$("#bb").disabled=true}
+function help(){G.w=Math.max(G.w,.8);meet()}
+function meet(){
+ if(G.ph==="B"&&G.sceneId===G.i+"-"+G.sub+"-"+G.slips)return;
+ clearInterval(tm);G.ph="B";G.sceneId=G.i+"-"+G.sub+"-"+G.slips;
+ $("#fr").style.left="28%";$("#fh").textContent="😟";$("#th").classList.add("off");
+ round(0)}
+function round(n){
+ G.r=n;const s=cur(),st=SET[s[5]];
+ const q=n===0?s[4]:st[1][0],opts=n===0?st[0]:st[1][1];
+ $("#dlg").innerHTML=`<div class="who">${s[3]}</div><p class="say">“${q}”</p>
+ ${opts.map((o,i)=>`<button onclick="reply(${i})">${fill(o[0])}</button>`).join("")}`}
+function reply(i){
+ const s=cur(),st=SET[s[5]],o=(G.r===0?st[0]:st[1][1])[i];
+ G.imp+=o[1];if(o[1]<0)G.picks.push(o[3]);upd();
+ $("#fh").textContent=o[1]<0?"🙂":o[1]>10?"😕":"😐";
+ $("#dlg").innerHTML=`<div class="who">${s[3]}</div><p class="say">“${fill(o[2])}”</p>
+ <button class="pri" onclick="${G.r===0?"round(1)":"result()"}">Continuar</button>`}
+function result(){
+ const s=cur(),win=G.imp<=65,imp=Math.max(0,Math.round(G.imp));
+ if(win){
+  const n=imp<=30?3:imp<=50?2:1;G.stars.push(n);
+  $("#obj").style.opacity=.15;$("#mh").textContent="😌";$("#fh").textContent="😊";
+  $("#dlg").innerHTML=`<h2>Lo lograste</h2><div class="stars">${"★".repeat(n)}${"☆".repeat(3-n)}</div>
+  <p>Dejaste ${V[G.sub][1]} y el impulso pasó. Esto fue lo que funcionó:</p>
+  ${G.picks.length?G.picks.map(t=>`<div class="tip">${t}</div>`).join(""):`<div class="tip">Resististe, aun con el impulso alto. Hablar antes con quien te apoya lo hace más fácil.</div>`}
+  <button class="pri" onclick="nextScene()">${G.i>=2?"Ver resumen":"Siguiente escena"}</button>`;
+ }else{
+  G.slips++;
+  $("#obj").style.left=(8+G.w*50+6)+"%";$("#obj").style.bottom="132px";$("#mh").textContent="😔";$("#fh").textContent="🤍";
+  $("#dlg").innerHTML=`<div class="who">${s[3]}</div><p class="say">“Esto no borra lo que has avanzado. Un tropiezo no es un fracaso. Estoy aquí, ¿lo intentamos de nuevo?”</p>
+  <p class="mut">El impulso llegó muy alto. La próxima vez prueba respirar antes y decirle a ${s[3].split(",")[0]} cómo te sientes.</p>
+  <button class="pri" onclick="scene()">Reintentar escena</button><button onclick="nextScene(1)">Seguir a la siguiente</button>`}}
+function nextScene(skip){
+ if(skip)G.stars.push(0);
+ G.i++;if(G.i>=3){end();return}scene()}
+function end(){
+ const t=G.stars.reduce((a,b)=>a+b,0);
+ $("#app").innerHTML=`<h1>Completaste las 3 escenas</h1>
+ <div class="card"><div class="stars">${"★".repeat(t)}${"☆".repeat(9-t)}</div><p><b>${t}</b> de 9 estrellas · tropiezos: <b>${G.slips}</b></p>
+ <p>Lo que llevas de aquí: nombrar lo que sientes, respirar, pedir compañía y cambiar de lugar. En la vida real, apóyate en tu red y en profesionales de salud.</p></div>
+ <button class="pri" onclick="home()">Jugar de nuevo</button>`}
+home();
+</script>
+</body>
+</html>
